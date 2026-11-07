@@ -3,16 +3,8 @@ import { useParams } from "react-router"
 import { Button, Card, Flex, Spinner, Text, TextField } from "@radix-ui/themes"
 import { useForm } from "react-hook-form"
 
-import {
-  useCreateDonation,
-  useGetDonationStatus,
-  useGetPublicOrg,
-} from "@/api/generated"
-import type {
-  CreateDonationResponse,
-  DonationStatusResponse,
-  PublicOrgResponse,
-} from "@/api/generated"
+import { useCreateDonation, useGetPublicOrg } from "@/api/generated"
+import type { PublicOrgResponse } from "@/api/generated"
 import type { ApiError } from "@/types/auth"
 
 interface DonateForm {
@@ -24,7 +16,6 @@ interface DonateForm {
 const DonatePage = () => {
   const { subdomain = "" } = useParams()
   const [serverError, setServerError] = useState<string | null>(null)
-  const [donation, setDonation] = useState<CreateDonationResponse | null>(null)
 
   const {
     data: org,
@@ -33,13 +24,6 @@ const DonatePage = () => {
   } = useGetPublicOrg<PublicOrgResponse, ApiError>(subdomain)
 
   const createDonation = useCreateDonation()
-  const {
-    data: status,
-    error: statusError,
-    refetch,
-  } = useGetDonationStatus<DonationStatusResponse, ApiError>(subdomain, donation?.donation_id ?? "", {
-    query: { enabled: !!donation },
-  })
 
   const {
     register,
@@ -59,7 +43,7 @@ const DonatePage = () => {
           donor_email: data.donor_email || null,
         },
       })
-      setDonation(res)
+      window.location.assign(res.checkout_url)
     } catch (err: unknown) {
       const msg =
         err && typeof err === "object" && "message" in err
@@ -90,7 +74,11 @@ const DonatePage = () => {
             )}
           </Flex>
 
-          {orgError && <Text size="2" color="red">Organization not found</Text>}
+          {orgError && (
+            <Text size="2" color="red">
+              Organization not found
+            </Text>
+          )}
 
           {serverError && (
             <Text size="2" color="red" role="alert">
@@ -104,82 +92,53 @@ const DonatePage = () => {
             </Text>
           )}
 
-          {donation ? (
-            <Flex direction="column" gap="3">
-              <Text size="2">
-                Donation created — ID <strong>{donation.donation_id}</strong>
-              </Text>
-              {/* shortcut: no Stripe.js payment confirmation yet — needs @stripe/stripe-js + backend donation status endpoint (currently TODO) */}
-              <Text size="1" color="gray">
-                Payment intent: {donation.payment_intent_id}
-              </Text>
-              <Flex direction="column" gap="1" align="start">
-                <Button size="2" variant="soft" onClick={() => refetch()}>
-                  Check status
-                </Button>
-                {status && (
-                  <Text size="1" color="gray">
-                    Status: {status.status} · ${(status.amount_cents / 100).toFixed(2)}{" "}
-                    {status.currency.toUpperCase()}
+          {org && canDonate && (
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <Flex direction="column" gap="4">
+                <Flex direction="column" gap="1">
+                  <Text as="label" size="2" weight="medium">
+                    Amount (USD)
                   </Text>
-                )}
-                {statusError && (
-                  <Text size="1" color="red">
-                    Status unavailable
-                  </Text>
-                )}
-              </Flex>
-            </Flex>
-          ) : (
-            org &&
-            canDonate && (
-              <form onSubmit={handleSubmit(onSubmit)}>
-                <Flex direction="column" gap="4">
-                  <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="medium">
-                      Amount (USD)
+                  <TextField.Root
+                    type="number"
+                    step="0.01"
+                    min="1"
+                    placeholder="25.00"
+                    {...register("amount", {
+                      required: "Amount is required",
+                      min: { value: 1, message: "Minimum is $1" },
+                    })}
+                  />
+                  {errors.amount && (
+                    <Text size="1" color="red">
+                      {errors.amount.message}
                     </Text>
-                    <TextField.Root
-                      type="number"
-                      step="0.01"
-                      min="1"
-                      placeholder="25.00"
-                      {...register("amount", {
-                        required: "Amount is required",
-                        min: { value: 1, message: "Minimum is $1" },
-                      })}
-                    />
-                    {errors.amount && (
-                      <Text size="1" color="red">
-                        {errors.amount.message}
-                      </Text>
-                    )}
-                  </Flex>
-
-                  <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="medium">
-                      Your name (optional)
-                    </Text>
-                    <TextField.Root placeholder="Jane Doe" {...register("donor_name")} />
-                  </Flex>
-
-                  <Flex direction="column" gap="1">
-                    <Text as="label" size="2" weight="medium">
-                      Your email (optional)
-                    </Text>
-                    <TextField.Root
-                      type="email"
-                      placeholder="jane@example.com"
-                      {...register("donor_email")}
-                    />
-                  </Flex>
-
-                  <Button type="submit" size="3" disabled={createDonation.isPending}>
-                    {createDonation.isPending ? "Creating..." : "Donate"}
-                  </Button>
+                  )}
                 </Flex>
-              </form>
-            )
+
+                <Flex direction="column" gap="1">
+                  <Text as="label" size="2" weight="medium">
+                    Your name (optional)
+                  </Text>
+                  <TextField.Root placeholder="Jane Doe" {...register("donor_name")} />
+                </Flex>
+
+                <Flex direction="column" gap="1">
+                  <Text as="label" size="2" weight="medium">
+                    Your email (optional)
+                  </Text>
+                  <TextField.Root
+                    type="email"
+                    placeholder="jane@example.com"
+                    {...register("donor_email")}
+                  />
+                </Flex>
+
+                <Button type="submit" size="3" disabled={createDonation.isPending}>
+                  {createDonation.isPending ? "Redirecting to checkout..." : "Donate"}
+                </Button>
+              </Flex>
+            </form>
           )}
         </Flex>
       </Card>

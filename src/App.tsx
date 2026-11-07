@@ -7,6 +7,8 @@ import OnboardingSuccessPage from "@/pages/onboarding/OnboardingSuccessPage"
 import OnboardingErrorPage from "@/pages/onboarding/OnboardingErrorPage"
 import DashboardPage from "@/pages/dashboard/DashboardPage"
 import DonatePage from "@/pages/donate/DonatePage"
+import DonateSuccessPage from "@/pages/donate/DonateSuccessPage"
+import DonateCancelPage from "@/pages/donate/DonateCancelPage"
 import ProtectedRoute from "@/components/ProtectedRoute"
 
 const App = () => {
@@ -34,6 +36,8 @@ const App = () => {
         }
       />
       <Route path="/donate/:subdomain" element={<DonatePage />} />
+      <Route path="/donate/:subdomain/success" element={<DonateSuccessPage />} />
+      <Route path="/donate/:subdomain/cancel" element={<DonateCancelPage />} />
     </Routes>
   )
 }

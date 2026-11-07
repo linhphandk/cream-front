@@ -128,9 +128,8 @@ export interface CreateDonationRequest {
 }
 
 export interface CreateDonationResponse {
-  client_secret: string;
+  checkout_url: string;
   donation_id: string;
-  payment_intent_id: string;
 }
 
 export interface DonationStatusResponse {

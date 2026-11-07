@@ -7,13 +7,17 @@
         "tags": ["auth"],
         "operationId": "register",
         "requestBody": {
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RegisterRequest" } } },
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/RegisterRequest" } }
+          },
           "required": true
         },
         "responses": {
           "201": {
             "description": "User registered",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } }
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } }
+            }
           },
           "400": { "description": "Validation error" },
           "409": { "description": "Email already registered" }
@@ -25,13 +29,17 @@
         "tags": ["auth"],
         "operationId": "login",
         "requestBody": {
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } },
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } }
+          },
           "required": true
         },
         "responses": {
           "200": {
             "description": "Logged in",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } }
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } }
+            }
           },
           "401": { "description": "Invalid email or password" }
         }
@@ -51,7 +59,9 @@
         "responses": {
           "200": {
             "description": "Token refreshed",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } }
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } }
+            }
           },
           "401": { "description": "Missing or invalid refresh token" }
         }
@@ -63,13 +73,19 @@
         "operationId": "create_organization",
         "security": [{ "bearer": [] }],
         "requestBody": {
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateOrganizationRequest" } } },
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateOrganizationRequest" }
+            }
+          },
           "required": true
         },
         "responses": {
           "201": {
             "description": "Organization created",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Organization" } } }
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Organization" } }
+            }
           },
           "400": { "description": "Validation error" },
           "401": { "description": "Missing or invalid bearer token" },
@@ -85,7 +101,9 @@
         "responses": {
           "200": {
             "description": "The caller's organization",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Organization" } } }
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Organization" } }
+            }
           },
           "401": { "description": "Missing or invalid bearer token" },
           "404": { "description": "No organization yet" }
@@ -107,7 +125,9 @@
         "responses": {
           "200": {
             "description": "Public organization info",
-            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PublicOrgResponse" } } }
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/PublicOrgResponse" } }
+            }
           },
           "404": { "description": "Organization not found" }
         }
@@ -120,7 +140,9 @@
         "security": [{ "bearer": [] }],
         "requestBody": {
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/CreateStripeOnboardingRequest" } }
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateStripeOnboardingRequest" }
+            }
           },
           "required": true
         },
@@ -128,7 +150,9 @@
           "201": {
             "description": "Stripe onboarding session created",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/OnboardingLinkResponse" } }
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OnboardingLinkResponse" }
+              }
             }
           },
           "404": { "description": "Organization not found" }
@@ -152,7 +176,9 @@
           "200": {
             "description": "Stripe onboarding status",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/OnboardingStatusResponse" } }
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OnboardingStatusResponse" }
+              }
             }
           },
           "404": { "description": "Organization or Stripe account not found" }
@@ -176,7 +202,9 @@
           "200": {
             "description": "New Stripe onboarding session",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/OnboardingLinkResponse" } }
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/OnboardingLinkResponse" }
+              }
             }
           },
           "400": { "description": "Stripe account not created yet" },
@@ -214,14 +242,20 @@
           }
         ],
         "requestBody": {
-          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateDonationRequest" } } },
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateDonationRequest" }
+            }
+          },
           "required": true
         },
         "responses": {
           "201": {
             "description": "Donation PaymentIntent created",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/CreateDonationResponse" } }
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CreateDonationResponse" }
+              }
             }
           },
           "404": { "description": "Organization not found" }
@@ -250,7 +284,9 @@
           "200": {
             "description": "Donation status",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/DonationStatusResponse" } }
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DonationStatusResponse" }
+              }
             }
           },
           "404": { "description": "Donation not found" }
@@ -382,11 +418,10 @@
       "CreateDonationResponse": {
         "type": "object",
         "properties": {
-          "client_secret": { "type": "string" },
-          "donation_id": { "type": "string", "format": "uuid" },
-          "payment_intent_id": { "type": "string" }
+          "checkout_url": { "type": "string" },
+          "donation_id": { "type": "string", "format": "uuid" }
         },
-        "required": ["client_secret", "donation_id", "payment_intent_id"]
+        "required": ["checkout_url", "donation_id"]
       },
       "DonationStatusResponse": {
         "type": "object",
