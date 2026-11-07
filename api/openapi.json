@@ -1,0 +1,404 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "cream-back", "description": "", "version": "0.1.0" },
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["auth"],
+        "operationId": "register",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RegisterRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "User registered",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } }
+          },
+          "400": { "description": "Validation error" },
+          "409": { "description": "Email already registered" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["auth"],
+        "operationId": "login",
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LoginRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Logged in",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } }
+          },
+          "401": { "description": "Invalid email or password" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["auth"],
+        "operationId": "logout",
+        "responses": { "200": { "description": "Logged out" } }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["auth"],
+        "operationId": "refresh",
+        "responses": {
+          "200": {
+            "description": "Token refreshed",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } }
+          },
+          "401": { "description": "Missing or invalid refresh token" }
+        }
+      }
+    },
+    "/orgs": {
+      "post": {
+        "tags": ["orgs"],
+        "operationId": "create_organization",
+        "security": [{ "bearer": [] }],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateOrganizationRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Organization created",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Organization" } } }
+          },
+          "400": { "description": "Validation error" },
+          "401": { "description": "Missing or invalid bearer token" },
+          "409": { "description": "Subdomain already taken or user already has an org" }
+        }
+      }
+    },
+    "/orgs/mine": {
+      "get": {
+        "tags": ["orgs"],
+        "operationId": "my_org",
+        "security": [{ "bearer": [] }],
+        "responses": {
+          "200": {
+            "description": "The caller's organization",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Organization" } } }
+          },
+          "401": { "description": "Missing or invalid bearer token" },
+          "404": { "description": "No organization yet" }
+        }
+      }
+    },
+    "/orgs/{subdomain}": {
+      "get": {
+        "tags": ["orgs"],
+        "operationId": "get_public_org",
+        "parameters": [
+          {
+            "name": "subdomain",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public organization info",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PublicOrgResponse" } } }
+          },
+          "404": { "description": "Organization not found" }
+        }
+      }
+    },
+    "/onboarding/stripe/create": {
+      "post": {
+        "tags": ["stripe"],
+        "operationId": "create_stripe_onboarding",
+        "security": [{ "bearer": [] }],
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateStripeOnboardingRequest" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Stripe onboarding session created",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/OnboardingLinkResponse" } }
+            }
+          },
+          "404": { "description": "Organization not found" }
+        }
+      }
+    },
+    "/onboarding/stripe/status/{org_id}": {
+      "get": {
+        "tags": ["stripe"],
+        "operationId": "get_stripe_onboarding_status",
+        "security": [{ "bearer": [] }],
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stripe onboarding status",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/OnboardingStatusResponse" } }
+            }
+          },
+          "404": { "description": "Organization or Stripe account not found" }
+        }
+      }
+    },
+    "/onboarding/stripe/refresh/{org_id}": {
+      "post": {
+        "tags": ["stripe"],
+        "operationId": "refresh_stripe_onboarding",
+        "security": [{ "bearer": [] }],
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "New Stripe onboarding session",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/OnboardingLinkResponse" } }
+            }
+          },
+          "400": { "description": "Stripe account not created yet" },
+          "404": { "description": "Organization not found" }
+        }
+      }
+    },
+    "/onboarding/stripe/return": {
+      "get": {
+        "tags": ["stripe"],
+        "operationId": "stripe_onboarding_return",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "302": { "description": "Redirects to frontend success or error page" }
+        }
+      }
+    },
+    "/orgs/{subdomain}/donate": {
+      "post": {
+        "tags": ["donations"],
+        "operationId": "create_donation",
+        "parameters": [
+          {
+            "name": "subdomain",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "requestBody": {
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateDonationRequest" } } },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Donation PaymentIntent created",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/CreateDonationResponse" } }
+            }
+          },
+          "404": { "description": "Organization not found" }
+        }
+      }
+    },
+    "/orgs/{subdomain}/donate/{donation_id}": {
+      "get": {
+        "tags": ["donations"],
+        "operationId": "get_donation_status",
+        "parameters": [
+          {
+            "name": "subdomain",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "donation_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Donation status",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/DonationStatusResponse" } }
+            }
+          },
+          "404": { "description": "Donation not found" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": { "message": { "type": "string" } },
+        "required": ["message"]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string" },
+          "name": { "type": "string" },
+          "password": { "type": "string" }
+        },
+        "required": ["email", "name", "password"]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": { "email": { "type": "string" }, "password": { "type": "string" } },
+        "required": ["email", "password"]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "user": { "$ref": "#/components/schemas/UserResponse" },
+          "access_token": { "type": "string" },
+          "expires_in": { "type": "integer" }
+        },
+        "required": ["user", "access_token", "expires_in"]
+      },
+      "UserResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "email": { "type": "string" },
+          "name": { "type": "string" }
+        },
+        "required": ["id", "email", "name"]
+      },
+      "CreateOrganizationRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "subdomain": { "type": "string" },
+          "fee_bps": { "type": "integer", "default": 500 }
+        },
+        "required": ["name", "subdomain"]
+      },
+      "Organization": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "subdomain": { "type": "string" },
+          "feeBps": { "type": "integer" },
+          "stripeAccountId": { "type": ["string", "null"] },
+          "createdAt": { "type": ["string", "null"], "format": "date-time" },
+          "updatedAt": { "type": ["string", "null"], "format": "date-time" },
+          "stripeChargesEnabled": { "type": ["boolean", "null"] },
+          "stripePayoutsEnabled": { "type": ["boolean", "null"] },
+          "stripeDetailsSubmitted": { "type": ["boolean", "null"] }
+        },
+        "required": ["id", "name", "subdomain", "feeBps"]
+      },
+      "PublicOrgResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "subdomain": { "type": "string" },
+          "stripeOnboardingComplete": { "type": "boolean" }
+        },
+        "required": ["id", "name", "subdomain"]
+      },
+      "CreateStripeOnboardingRequest": {
+        "type": "object",
+        "properties": {
+          "org_id": { "type": "string", "format": "uuid" },
+          "entity_type": { "type": "string", "enum": ["company", "individual"] },
+          "country": { "type": "string", "default": "US" }
+        },
+        "required": ["org_id", "entity_type"]
+      },
+      "OnboardingLinkResponse": {
+        "type": "object",
+        "properties": {
+          "account_id": { "type": "string" },
+          "onboarding_url": { "type": "string" }
+        },
+        "required": ["account_id", "onboarding_url"]
+      },
+      "OnboardingStatusResponse": {
+        "type": "object",
+        "properties": {
+          "account_id": { "type": "string" },
+          "charges_enabled": { "type": "boolean" },
+          "payouts_enabled": { "type": "boolean" },
+          "onboarding_complete": { "type": "boolean" },
+          "requirements_currently_due": { "type": "array", "items": { "type": "string" } },
+          "requirements_eventually_due": { "type": "array", "items": { "type": "string" } }
+        },
+        "required": [
+          "account_id",
+          "charges_enabled",
+          "payouts_enabled",
+          "onboarding_complete",
+          "requirements_currently_due",
+          "requirements_eventually_due"
+        ]
+      },
+      "CreateDonationRequest": {
+        "type": "object",
+        "properties": {
+          "amount_cents": { "type": "integer" },
+          "currency": { "type": "string" },
+          "donor_email": { "type": ["string", "null"] },
+          "donor_name": { "type": ["string", "null"] },
+          "metadata": { "type": ["object", "null"] }
+        },
+        "required": ["amount_cents", "currency"]
+      },
+      "CreateDonationResponse": {
+        "type": "object",
+        "properties": {
+          "client_secret": { "type": "string" },
+          "donation_id": { "type": "string", "format": "uuid" },
+          "payment_intent_id": { "type": "string" }
+        },
+        "required": ["client_secret", "donation_id", "payment_intent_id"]
+      },
+      "DonationStatusResponse": {
+        "type": "object",
+        "properties": {
+          "donation_id": { "type": "string", "format": "uuid" },
+          "status": { "type": "string" },
+          "amount_cents": { "type": "integer" },
+          "platform_fee_cents": { "type": "integer" },
+          "currency": { "type": "string" }
+        },
+        "required": ["donation_id", "status", "amount_cents", "platform_fee_cents", "currency"]
+      }
+    }
+  }
+}
